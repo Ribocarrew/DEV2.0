@@ -81,6 +81,24 @@ export function Heatmap() {
         })}
       </div>
 
+      {latestSession && (
+        <div className="bg-white border-2 border-amber-200 rounded-2xl p-6 mb-8 text-left shadow-sm max-w-2xl mx-auto">
+          <h3 className="text-xl font-sans font-semibold text-teal-800 mb-3 flex items-center gap-2">
+            <span>{latestSession.dissonanceFlagged ? '🪞 Dit didaktiske benspænd' : '🪞 Dit spejlbillede'}</span>
+          </h3>
+          {latestSession.reflection ? (
+            <div className="bg-sand p-4 rounded-xl border border-teal-100">
+              <h4 className="text-sm font-sans font-bold text-teal-700 mb-2">Din refleksion / hack:</h4>
+              <p className="font-serif text-ink whitespace-pre-wrap">{latestSession.reflection}</p>
+            </div>
+          ) : (
+             <p className="text-stone font-serif text-sm">
+               Du valgte at gå videre uden at skrive en refleksion i denne runde.
+             </p>
+          )}
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white border border-teal-100 shadow-sm rounded-xl p-5 mb-8">
         <p className="text-sm font-serif text-stone flex-1">
           <strong>Bemærk:</strong> Kortene trækkes tilfældigt, så landkortet viser en <em>tendens og en provokation</em> — ikke en eksakt måling.
