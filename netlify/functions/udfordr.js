@@ -13,7 +13,8 @@ export const handler = async (event) => {
   }
 
   try {
-    const { lens, cards } = JSON.parse(event.body);
+    const body = JSON.parse(event.body);
+    const { lens, cards } = body;
 
     const topCards = cards.slice(0, 3).map(c => c.text).join(', ');
     const bottomCard = cards[8].text;
@@ -24,7 +25,7 @@ Valgt metode: ${lens.label} (${lens.tag})
 Top prioriteter (+2, +1): ${topCards}
 Laveste prioritet (-2): ${bottomCard}`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    const fetchParams = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -33,17 +34,25 @@ Laveste prioritet (-2): ${bottomCard}`;
           temperature: 0.7,
         }
       })
-    });
+    };
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, fetchParams);
 
     if (!response.ok) {
-      console.error('Gemini API status:', response.status);
-      throw new Error(`API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Gemini API Error Response:', response.status, errorText);
+      return {
+        statusCode: 500,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: `Gemini API returned ${response.status}`, details: errorText })
+      };
     }
 
     const data = await response.json();
     const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!reply) {
+      console.error('No reply from model. Data was:', JSON.stringify(data));
       throw new Error('No reply from model');
     }
 
@@ -53,11 +62,11 @@ Laveste prioritet (-2): ${bottomCard}`;
       body: JSON.stringify({ reply })
     };
   } catch (error) {
-    console.error('Gemini Error:', error);
+    console.error('Gemini Execution Error:', error.message, error.stack);
     return {
       statusCode: 500,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: 'Failed to process request' })
+      body: JSON.stringify({ error: 'Failed to process request', details: error.message })
     };
   }
 };

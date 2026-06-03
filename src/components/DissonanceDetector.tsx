@@ -63,35 +63,7 @@ export function DissonanceDetector({ session, onComplete }: Props) {
           "{message}"
         </p>
 
-        {!aiResponse && !aiLoading && !aiError && (
-          <div className="mb-10">
-            <button 
-              onClick={handleAIChallenge}
-              className="bg-teal-50 hover:bg-teal-100 text-teal-800 font-sans font-semibold py-2 px-6 rounded-lg transition-colors border border-teal-200 shadow-sm"
-            >
-              Lad spejlet udfordre mig dybere
-            </button>
-          </div>
-        )}
 
-        {aiLoading && (
-          <div className="mb-10 text-teal-600 font-serif italic animate-pulse">
-            Spejlet tænker...
-          </div>
-        )}
-
-        {aiError && (
-          <div className="mb-10 text-stone/60 font-serif text-sm">
-            Spejlet kan ikke udfordre lige nu.
-          </div>
-        )}
-
-        {aiResponse && (
-          <div className="mb-10 bg-teal-50 border border-teal-100 rounded-xl p-6 text-left animate-in fade-in zoom-in-95 duration-500">
-            <h3 className="text-sm font-sans font-bold text-teal-800 mb-2">Det dybere spejl spørger:</h3>
-            <p className="text-lg font-serif text-ink italic leading-relaxed">"{aiResponse}"</p>
-          </div>
-        )}
 
         {!isWriting ? (
           <div className="flex flex-col gap-4">
@@ -125,6 +97,38 @@ export function DissonanceDetector({ session, onComplete }: Props) {
             </button>
           </div>
         )}
+
+        <div className="mt-8 border-t border-teal-100 pt-8">
+          {!aiResponse && !aiLoading && !aiError && (
+            <div>
+              <button 
+                onClick={handleAIChallenge}
+                className="text-teal-700 font-sans font-semibold text-sm hover:text-teal-900 underline underline-offset-4 transition-colors"
+              >
+                Lad spejlet udfordre mig dybere
+              </button>
+            </div>
+          )}
+
+          {aiLoading && (
+            <div className="text-teal-600 font-serif italic animate-pulse text-sm">
+              Spejlet tænker...
+            </div>
+          )}
+
+          {aiError && (
+            <div className="text-stone/60 font-serif text-sm">
+              Spejlet kan ikke udfordre lige nu. Prøv evt. at gå til resultatet ovenfor.
+            </div>
+          )}
+
+          {aiResponse && (
+            <div className="bg-teal-50 border border-teal-100 rounded-xl p-6 text-left animate-in fade-in zoom-in-95 duration-500 shadow-sm">
+              <h3 className="text-sm font-sans font-bold text-teal-800 mb-2">Det dybere spejl spørger:</h3>
+              <p className="text-lg font-serif text-ink italic leading-relaxed">"{aiResponse}"</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
