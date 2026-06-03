@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useSessions } from '../hooks/useSessions';
 import { ShareModal } from './ShareModal';
-import { detectDissonance } from '../utils/dissonance';
+import { generateRichFeedback } from '../utils/feedback';
 import { lenses } from '../data/lenses';
 import { cards } from '../data/cards';
-
+import { RichFeedbackView } from './RichFeedback';
 export function Heatmap() {
   const { sessions, clearSessions } = useSessions();
   const [isShareOpen, setIsShareOpen] = useState(false);
@@ -14,12 +14,12 @@ export function Heatmap() {
   const sortedSessions = [...sessions].sort((a, b) => a.timestamp - b.timestamp);
   const latestSession = sortedSessions[sortedSessions.length - 1];
 
-  let dissonanceMessage = '';
+  let richFeedback = null;
   if (latestSession) {
     const lens = lenses.find(l => l.id === latestSession.lens);
     const placedCards = latestSession.diamond.map(d => cards.find(c => c.id === d.cardId)!);
     if (lens && placedCards.length > 0) {
-      dissonanceMessage = detectDissonance(lens, placedCards).message;
+      richFeedback = generateRichFeedback(latestSession, lens, placedCards);
     }
   }
 
@@ -93,27 +93,8 @@ export function Heatmap() {
         })}
       </div>
 
-      {latestSession && (
-        <div className="bg-white border-2 border-amber-200 rounded-2xl p-6 mb-8 text-left shadow-sm max-w-2xl mx-auto">
-          <h3 className="text-xl font-sans font-semibold text-teal-800 mb-4 flex items-center gap-2">
-            <span>{latestSession.dissonanceFlagged ? '🪞 Dit didaktiske benspænd' : '🪞 Dit spejlbillede'}</span>
-          </h3>
-
-          {dissonanceMessage && (
-            <p className="text-stone font-serif text-lg italic mb-6">"{dissonanceMessage}"</p>
-          )}
-
-          {latestSession.reflection ? (
-            <div className="bg-sand p-4 rounded-xl border border-teal-100">
-              <h4 className="text-sm font-sans font-bold text-teal-700 mb-2">Din refleksion / hack:</h4>
-              <p className="font-serif text-ink whitespace-pre-wrap">{latestSession.reflection}</p>
-            </div>
-          ) : (
-             <p className="text-stone font-serif text-sm">
-               Du valgte at gå videre uden at skrive en refleksion i denne runde.
-             </p>
-          )}
-        </div>
+      {latestSession && richFeedback && (
+        <RichFeedbackView feedback={richFeedback} session={latestSession} />
       )}
 
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white border border-teal-100 shadow-sm rounded-xl p-5 mb-8">
