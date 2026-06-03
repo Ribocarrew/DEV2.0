@@ -19,7 +19,7 @@ export function Heatmap() {
     const lens = lenses.find(l => l.id === latestSession.lens);
     const placedCards = latestSession.diamond.map(d => cards.find(c => c.id === d.cardId)!);
     if (lens && placedCards.length > 0) {
-      richFeedback = generateRichFeedback(latestSession, lens, placedCards);
+      richFeedback = generateRichFeedback(lens, placedCards);
     }
   }
 

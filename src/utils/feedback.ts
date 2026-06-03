@@ -7,12 +7,12 @@ export interface RichFeedback {
   nextStep: string;
 }
 
-export function generateRichFeedback(session: Session, lens: LensOption, placedCards: Card[]): RichFeedback {
+export function generateRichFeedback(lens: LensOption, placedCards: Card[]): RichFeedback {
   const top1 = placedCards[0];
   const top2 = placedCards[1];
   const bottom = placedCards[8];
 
-  const priorityText = `Du lod "${top1.title}" og "${top2.title}" veje tungest, mens "${bottom.title}" røg helt i bund.`;
+  const priorityText = `Du lod "${top1.text}" og "${top2.text}" veje tungest, mens "${bottom.text}" røg helt i bund.`;
 
   const topCards = placedCards.slice(0, 3);
   const eyeCount = topCards.filter(c => c.category === 'eye').length;
@@ -42,9 +42,9 @@ export function generateRichFeedback(session: Session, lens: LensOption, placedC
   } else if (neutralCount >= 2) {
     tensionText = `Den strukturelle og neutrale praksis fylder mest i din top. Er selve rammen ved at blive vigtigere end det faglige og epistemologiske indhold?`;
   } else if (lensPole === 'hand' && bottom.category === 'hand') {
-    tensionText = `Du har en undersøgende motor ("${lens.label}"), men har valgt at lægge "${bottom.title}" helt i bund. Er der elementer af den åbne praksis, der skaber unødig støj i din kontekst?`;
+    tensionText = `Du har en undersøgende motor ("${lens.label}"), men har valgt at lægge "${bottom.text}" helt i bund. Er der elementer af den åbne praksis, der skaber unødig støj i din kontekst?`;
   } else if (lensPole === 'eye' && bottom.category === 'eye') {
-    tensionText = `Du har en overleverende motor ("${lens.label}"), men sorterer "${bottom.title}" helt fra. Hvilke dele af traditionel formidling forsøger du bevidst at styre udenom her?`;
+    tensionText = `Du har en overleverende motor ("${lens.label}"), men sorterer "${bottom.text}" helt fra. Hvilke dele af traditionel formidling forsøger du bevidst at styre udenom her?`;
   } else {
     tensionText = `Der er umiddelbar harmoni mellem din motor og dine prioriteringer, som trækker samme vej. Kan der opstå en risiko for "ekkokammer", når intet skaber bevidst didaktisk modstand i designet?`;
   }
