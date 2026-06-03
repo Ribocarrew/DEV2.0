@@ -14,12 +14,35 @@ export function DissonanceDetector({ session, onComplete }: Props) {
   const { updateSession } = useSessions();
   const [reflection, setReflection] = useState('');
   const [isWriting, setIsWriting] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResponse, setAiResponse] = useState<string | null>(null);
+  const [aiError, setAiError] = useState(false);
   
   // Reconstruct data for detection
   const lens = lenses.find(l => l.id === session.lens)!;
   const placedCards = session.diamond.map(d => cards.find(c => c.id === d.cardId)!);
   
   const { hasDissonance, message } = detectDissonance(lens, placedCards);
+
+  const handleAIChallenge = async () => {
+    setAiLoading(true);
+    setAiError(false);
+    try {
+      const res = await fetch('/.netlify/functions/udfordr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lens, cards: placedCards })
+      });
+      if (!res.ok) throw new Error('API error');
+      const data = await res.json();
+      setAiResponse(data.reply);
+    } catch (err) {
+      console.error(err);
+      setAiError(true);
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const handleFinish = () => {
     updateSession(session.id, {
@@ -36,23 +59,53 @@ export function DissonanceDetector({ session, onComplete }: Props) {
           {hasDissonance ? 'Et spejlbillede med kant' : 'Et roligt spejl'}
         </h2>
         
-        <p className="text-xl font-serif text-ink mb-10 leading-relaxed">
+        <p className="text-xl font-serif text-ink mb-6 leading-relaxed">
           "{message}"
         </p>
+
+        {!aiResponse && !aiLoading && !aiError && (
+          <div className="mb-10">
+            <button 
+              onClick={handleAIChallenge}
+              className="bg-teal-50 hover:bg-teal-100 text-teal-800 font-sans font-semibold py-2 px-6 rounded-lg transition-colors border border-teal-200 shadow-sm"
+            >
+              Lad spejlet udfordre mig dybere
+            </button>
+          </div>
+        )}
+
+        {aiLoading && (
+          <div className="mb-10 text-teal-600 font-serif italic animate-pulse">
+            Spejlet tænker...
+          </div>
+        )}
+
+        {aiError && (
+          <div className="mb-10 text-stone/60 font-serif text-sm">
+            Spejlet kan ikke udfordre lige nu.
+          </div>
+        )}
+
+        {aiResponse && (
+          <div className="mb-10 bg-teal-50 border border-teal-100 rounded-xl p-6 text-left animate-in fade-in zoom-in-95 duration-500">
+            <h3 className="text-sm font-sans font-bold text-teal-800 mb-2">Det dybere spejl spørger:</h3>
+            <p className="text-lg font-serif text-ink italic leading-relaxed">"{aiResponse}"</p>
+          </div>
+        )}
 
         {!isWriting ? (
           <div className="flex flex-col gap-4">
             <button 
-              onClick={() => setIsWriting(true)}
-              className="bg-amber-500 hover:bg-amber-600 text-white font-sans font-bold py-4 px-6 rounded-xl transition-colors shadow-md"
-            >
-              Skriv en refleksion / et hack
-            </button>
-            <button 
               onClick={handleFinish}
-              className="bg-sand hover:bg-teal-50 text-teal-900 font-sans font-semibold py-4 px-6 rounded-xl border border-teal-200 transition-colors"
+              className="bg-amber-500 hover:bg-amber-600 text-white font-sans font-bold py-4 px-6 rounded-xl transition-all shadow-md hover:-translate-y-0.5"
             >
               "Det tænker jeg lige over..." (Gå til resultat)
+            </button>
+            <button 
+              onClick={() => setIsWriting(true)}
+              className="bg-transparent border-2 border-teal-600 text-teal-700 hover:bg-teal-50 font-sans font-bold py-4 px-6 rounded-xl transition-colors"
+            >
+              Skriv en refleksion / et hack
             </button>
           </div>
         ) : (
