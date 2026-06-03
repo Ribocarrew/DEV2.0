@@ -1,4 +1,4 @@
-import type {} from '';
+import type { Card } from '../types';
 
 export const cards: Card[] = [
   // Øjets epistemologi (12)

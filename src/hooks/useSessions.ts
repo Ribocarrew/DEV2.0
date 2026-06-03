@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type {} from '';
+import type { Session } from '../types';
 
 const STORAGE_KEY = 'epistemologisk-spejl-sessions';
 

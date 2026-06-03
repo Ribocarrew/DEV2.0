@@ -1,5 +1,4 @@
-import React from 'react';
-import type {} from '';
+import type { LensOption } from '../types';
 import { lenses } from '../data/lenses';
 import { Monitor, BookOpen } from 'lucide-react';
 

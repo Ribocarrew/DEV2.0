@@ -1,4 +1,4 @@
-import type {} from '';
+import type { LensOption } from '../types';
 
 export const lenses: LensOption[] = [
   // Digitalt rum

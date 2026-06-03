@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type {} from '';
+import type { Card, Session } from '../types';
 import { drawCards, calculateScore, SLOT_VALUES } from '../utils/engine';
 import { useSessions } from '../hooks/useSessions';
 

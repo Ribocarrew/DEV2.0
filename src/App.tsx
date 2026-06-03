@@ -6,7 +6,7 @@ import { MethodLens } from './components/MethodLens';
 import { DissonanceDetector } from './components/DissonanceDetector';
 import { Heatmap } from './components/Heatmap';
 import { HostView } from './components/HostView';
-import type {} from '';
+import type { LensOption, Session } from './types';
 import { useClassSessions } from './hooks/useClassSessions';
 import { decodeScore } from './utils/sharing';
 

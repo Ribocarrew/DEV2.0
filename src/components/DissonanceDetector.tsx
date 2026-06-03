@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import type {} from '';
+import { useState } from 'react';
+import type { Session } from '../types';
 import { detectDissonance } from '../utils/dissonance';
 import { lenses } from '../data/lenses';
 import { useSessions } from '../hooks/useSessions';

@@ -1,4 +1,4 @@
-import type {} from '';
+import type { Card, LensOption } from '../types';
 
 export type DissonanceResult = {
   hasDissonance: boolean;

@@ -1,7 +1,6 @@
-import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import QRCode from 'react-qr-code';
-import type {} from '';
+import type { Session } from '../types';
 import { encodeScore } from '../utils/sharing';
 
 type Props = {

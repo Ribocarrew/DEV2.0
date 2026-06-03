@@ -1,4 +1,4 @@
-import type {} from '';
+import type { Card } from '../types';
 import { cards } from '../data/cards';
 
 export function shuffle<T>(array: T[]): T[] {
@@ -21,7 +21,7 @@ export function drawCards(): Card[] {
 export const SLOT_VALUES = [2, 1, 1, 0, 0, 0, -1, -1, -2];
 
 export function calculateScore(slots: Card[]) {
-  const scores = { eye: 0, hand: 0, neutral: 0 };
+  const scores: Record<string, number> = { eye: 0, hand: 0, neutral: 0 };
   slots.forEach((card, index) => {
     if (card) {
       scores[card.category] += SLOT_VALUES[index];
