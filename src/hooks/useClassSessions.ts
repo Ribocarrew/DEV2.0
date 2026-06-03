@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type {} from '../utils/sharing';
+import type { SharedScore } from '../utils/sharing';
 
 const CLASS_KEY = 'epistemologisk-spejl-class';
 
