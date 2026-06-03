@@ -1,4 +1,4 @@
-import type { Card, LensOption, Session } from '../types';
+import type { Card, LensOption } from '../types';
 
 export interface RichFeedback {
   priority: string;

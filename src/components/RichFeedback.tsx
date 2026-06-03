@@ -1,4 +1,4 @@
-import { motion, Variants } from 'framer-motion';
+import { motion } from 'framer-motion';
 import type { RichFeedback } from '../utils/feedback';
 import type { Session } from '../types';
 
@@ -8,7 +8,7 @@ type Props = {
 };
 
 export function RichFeedbackView({ feedback, session }: Props) {
-  const containerVariants: Variants = {
+  const containerVariants: any = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
@@ -18,7 +18,7 @@ export function RichFeedbackView({ feedback, session }: Props) {
     }
   };
 
-  const itemVariants: Variants = {
+  const itemVariants: any = {
     hidden: { opacity: 0, y: 15 },
     show: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
   };
