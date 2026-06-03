@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useSessions } from '../hooks/useSessions';
 import { ShareModal } from './ShareModal';
+import { detectDissonance } from '../utils/dissonance';
+import { lenses } from '../data/lenses';
+import { cards } from '../data/cards';
 
 export function Heatmap() {
   const { sessions, clearSessions } = useSessions();
@@ -10,6 +13,15 @@ export function Heatmap() {
   // Sort by timestamp asc
   const sortedSessions = [...sessions].sort((a, b) => a.timestamp - b.timestamp);
   const latestSession = sortedSessions[sortedSessions.length - 1];
+
+  let dissonanceMessage = '';
+  if (latestSession) {
+    const lens = lenses.find(l => l.id === latestSession.lens);
+    const placedCards = latestSession.diamond.map(d => cards.find(c => c.id === d.cardId)!);
+    if (lens && placedCards.length > 0) {
+      dissonanceMessage = detectDissonance(lens, placedCards).message;
+    }
+  }
 
   // We map score from -4..4 to 10..90% to keep dots inside the box
   const getX = (handScore: number) => 10 + Math.max(0, Math.min(80, ((handScore + 4) / 8) * 80));
@@ -83,9 +95,14 @@ export function Heatmap() {
 
       {latestSession && (
         <div className="bg-white border-2 border-amber-200 rounded-2xl p-6 mb-8 text-left shadow-sm max-w-2xl mx-auto">
-          <h3 className="text-xl font-sans font-semibold text-teal-800 mb-3 flex items-center gap-2">
+          <h3 className="text-xl font-sans font-semibold text-teal-800 mb-4 flex items-center gap-2">
             <span>{latestSession.dissonanceFlagged ? '🪞 Dit didaktiske benspænd' : '🪞 Dit spejlbillede'}</span>
           </h3>
+
+          {dissonanceMessage && (
+            <p className="text-stone font-serif text-lg italic mb-6">"{dissonanceMessage}"</p>
+          )}
+
           {latestSession.reflection ? (
             <div className="bg-sand p-4 rounded-xl border border-teal-100">
               <h4 className="text-sm font-sans font-bold text-teal-700 mb-2">Din refleksion / hack:</h4>
