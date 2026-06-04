@@ -13,6 +13,7 @@ export type Card = {
   text: string;
   category: Category;
   tags?: string[];
+  friction: 'ru' | 'glat';
 };
 
 export type CardPlacement = {

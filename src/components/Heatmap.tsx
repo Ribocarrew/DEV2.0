@@ -6,6 +6,7 @@ import { generateRichFeedback } from '../utils/feedback';
 import { lenses } from '../data/lenses';
 import { cards } from '../data/cards';
 import { RichFeedbackView } from './RichFeedback';
+import type { Session } from '../types';
 export function Heatmap() {
   const { sessions, clearSessions } = useSessions();
   const [isShareOpen, setIsShareOpen] = useState(false);
@@ -23,9 +24,36 @@ export function Heatmap() {
     }
   }
 
-  // We map score from -4..4 to 10..90% to keep dots inside the box
-  const getX = (handScore: number) => 10 + Math.max(0, Math.min(80, ((handScore + 4) / 8) * 80));
-  const getY = (eyeScore: number) => 10 + Math.max(0, Math.min(80, ((4 - eyeScore) / 8) * 80));
+  const getCoordinatesAndColor = (session: Session) => {
+    let handScore = 0;
+    let eyeScore = 0;
+    let frictionScore = 0;
+
+    session.diamond.forEach(d => {
+      const card = cards.find(c => c.id === d.cardId);
+      if (!card) return;
+      
+      const weight = d.position;
+
+      if (card.category === 'hand') handScore += weight;
+      if (card.category === 'eye') eyeScore += weight;
+
+      let frictionVal = card.friction === 'ru' ? 1 : -1;
+      if (card.category === 'neutral') {
+        frictionVal *= 0.5;
+      }
+      frictionScore += frictionVal * weight;
+    });
+
+    const epistemologyScore = handScore - eyeScore;
+    const x = 10 + Math.max(0, Math.min(80, ((epistemologyScore + 8) / 16) * 80));
+    const y = 10 + Math.max(0, Math.min(80, ((8 - frictionScore) / 16) * 80));
+
+    const lens = lenses.find(l => l.id === session.lens);
+    const color = lens?.room === 'digital' ? 'bg-amber-500' : 'bg-teal-600';
+
+    return { x, y, color };
+  };
 
   return (
     <div className="max-w-3xl mx-auto p-4">
@@ -46,19 +74,20 @@ export function Heatmap() {
         </div>
         
         {/* Axis labels */}
+        {/* Axis labels */}
         <div className="absolute top-4 left-1/2 -translate-x-1/2 font-sans font-bold text-teal-800 bg-white/80 px-3 py-1 rounded-full shadow-sm text-sm z-0">
-          Øjet (Transmission)
+          Friktion (Modstand)
         </div>
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 font-sans font-bold text-stone/60 bg-white/80 px-3 py-1 rounded-full text-xs z-0">
-          Mindre Øje
+          Glathed (Friktionsløs)
         </div>
         
         {/* Hånd labels */}
-        <div className="absolute top-1/2 right-2 -translate-y-1/2 font-sans font-bold text-amber-700 bg-white/80 px-3 py-1 rounded-full shadow-sm text-sm z-0 origin-center rotate-90 sm:rotate-0">
+        <div className="absolute top-1/2 right-2 -translate-y-1/2 font-sans font-bold text-teal-800 bg-white/80 px-3 py-1 rounded-full shadow-sm text-sm z-0 origin-center rotate-90 sm:rotate-0">
           Hånden (Undersøgelse)
         </div>
         <div className="absolute top-1/2 left-2 -translate-y-1/2 font-sans font-bold text-stone/60 bg-white/80 px-3 py-1 rounded-full text-xs z-0 origin-center -rotate-90 sm:rotate-0">
-          Mindre Hånd
+          Øjet (Transmission)
         </div>
 
         {/* Plotting points */}
@@ -66,6 +95,7 @@ export function Heatmap() {
           const isLatest = index === sortedSessions.length - 1;
           const opacity = isLatest ? 1 : Math.max(0.3, (index + 1) / sortedSessions.length);
           const size = isLatest ? 'w-10 h-10' : 'w-6 h-6';
+          const { x, y, color } = getCoordinatesAndColor(session);
           
           return (
             <motion.div
@@ -73,14 +103,14 @@ export function Heatmap() {
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity }}
               transition={{ delay: index * 0.1, type: "spring", stiffness: 100 }}
-              className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full ${size} ${
+              className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full ${size} ${color} ${
                 isLatest 
-                  ? 'bg-amber-500 shadow-[0_0_25px_8px_rgba(245,158,11,0.6)] z-20 border-2 border-white' 
-                  : 'bg-teal-600 z-10'
+                  ? 'shadow-[0_0_15px_rgba(0,0,0,0.2)] z-20 border-2 border-white' 
+                  : 'z-10'
               }`}
               style={{
-                left: `${getX(session.scores.hand)}%`,
-                top: `${getY(session.scores.eye)}%`
+                left: `${x}%`,
+                top: `${y}%`
               }}
             >
                {isLatest && (
@@ -99,7 +129,7 @@ export function Heatmap() {
 
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white border border-teal-100 shadow-sm rounded-xl p-5 mb-8">
         <p className="text-sm font-serif text-stone flex-1">
-          <strong>Bemærk:</strong> Kortene trækkes tilfældigt, så landkortet viser en <em>tendens og en provokation</em> — ikke en eksakt måling.
+          <strong>Farvekode:</strong> <span className="inline-block w-3 h-3 rounded-full bg-amber-500 mr-1 align-middle"></span>Digital motor / <span className="inline-block w-3 h-3 rounded-full bg-teal-600 mr-1 align-middle ml-2"></span>Analog motor. <br/><span className="mt-1 block">Landkortet viser en tendens — ikke en eksakt måling.</span>
         </p>
         <button 
           onClick={() => {
