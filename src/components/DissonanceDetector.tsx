@@ -16,7 +16,7 @@ export function DissonanceDetector({ session, onComplete }: Props) {
   const [isWriting, setIsWriting] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResponse, setAiResponse] = useState<string | null>(null);
-  const [aiError, setAiError] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
   
   // Reconstruct data for detection
   const lens = lenses.find(l => l.id === session.lens)!;
@@ -26,19 +26,21 @@ export function DissonanceDetector({ session, onComplete }: Props) {
 
   const handleAIChallenge = async () => {
     setAiLoading(true);
-    setAiError(false);
+    setAiError(null);
     try {
       const res = await fetch('/.netlify/functions/udfordr', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lens, cards: placedCards })
       });
-      if (!res.ok) throw new Error('API error');
       const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.details || data.error || `HTTP ${res.status}`);
+      }
       setAiResponse(data.reply);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setAiError(true);
+      setAiError(err.message);
     } finally {
       setAiLoading(false);
     }
@@ -103,7 +105,7 @@ export function DissonanceDetector({ session, onComplete }: Props) {
             <div>
               <button 
                 onClick={handleAIChallenge}
-                className="text-teal-700 font-sans font-semibold text-sm hover:text-teal-900 underline underline-offset-4 transition-colors"
+                className="bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-800 font-sans font-semibold py-2 px-6 rounded-lg transition-colors shadow-sm text-sm"
               >
                 Lad spejlet udfordre mig dybere
               </button>
@@ -117,8 +119,8 @@ export function DissonanceDetector({ session, onComplete }: Props) {
           )}
 
           {aiError && (
-            <div className="text-stone/60 font-serif text-sm">
-              Spejlet kan ikke udfordre lige nu. Prøv evt. at gå til resultatet ovenfor.
+            <div className="text-red-500 font-serif text-sm">
+              Fejl: {aiError}
             </div>
           )}
 

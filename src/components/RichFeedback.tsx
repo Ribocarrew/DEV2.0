@@ -13,11 +13,11 @@ type Props = {
 export function RichFeedbackView({ feedback, session }: Props) {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResponse, setAiResponse] = useState<string | null>(null);
-  const [aiError, setAiError] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const handleAIChallenge = async () => {
     setAiLoading(true);
-    setAiError(false);
+    setAiError(null);
     
     const lens = lenses.find(l => l.id === session.lens);
     const placedCards = session.diamond.map(d => cards.find(c => c.id === d.cardId)!);
@@ -28,12 +28,15 @@ export function RichFeedbackView({ feedback, session }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lens, cards: placedCards })
       });
-      if (!res.ok) throw new Error('API error');
+      
       const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.details || data.error || `HTTP ${res.status}`);
+      }
       setAiResponse(data.reply);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setAiError(true);
+      setAiError(err.message);
     } finally {
       setAiLoading(false);
     }
@@ -106,8 +109,8 @@ export function RichFeedbackView({ feedback, session }: Props) {
         )}
 
         {aiError && (
-          <div className="text-stone/60 font-serif text-sm">
-            Spejlet kan ikke udfordre lige nu. Prøv igen senere.
+          <div className="text-red-500 font-serif text-sm">
+            Fejl: {aiError}
           </div>
         )}
 
