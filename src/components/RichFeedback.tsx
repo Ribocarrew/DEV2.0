@@ -92,7 +92,7 @@ export function RichFeedbackView({ feedback, session }: Props) {
           <div>
             <button 
               onClick={handleAIChallenge}
-              className="text-teal-700 font-sans font-semibold text-sm hover:text-teal-900 underline underline-offset-4 transition-colors"
+              className="bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-800 font-sans font-semibold py-2 px-6 rounded-lg transition-colors shadow-sm text-sm"
             >
               Lad spejlet udfordre mig dybere
             </button>

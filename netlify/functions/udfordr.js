@@ -1,3 +1,5 @@
+import https from 'https';
+
 export const handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
@@ -25,36 +27,47 @@ Valgt metode: ${lens.label} (${lens.tag})
 Top prioriteter (+2, +1): ${topCards}
 Laveste prioritet (-2): ${bottomCard}`;
 
-    const fetchParams = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.7,
+    const postData = JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.7,
+      }
+    });
+
+    const reply = await new Promise((resolve, reject) => {
+      const req = https.request(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(postData)
+          }
+        },
+        (res) => {
+          let data = '';
+          res.on('data', (chunk) => { data += chunk; });
+          res.on('end', () => {
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+              try {
+                const parsed = JSON.parse(data);
+                const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!text) reject(new Error('No reply from model. Data: ' + data));
+                else resolve(text);
+              } catch (e) {
+                reject(new Error('Failed to parse Gemini response: ' + data));
+              }
+            } else {
+              reject(new Error(`Gemini API returned ${res.statusCode}: ${data}`));
+            }
+          });
         }
-      })
-    };
+      );
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, fetchParams);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Gemini API Error Response:', response.status, errorText);
-      return {
-        statusCode: 500,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: `Gemini API returned ${response.status}`, details: errorText })
-      };
-    }
-
-    const data = await response.json();
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!reply) {
-      console.error('No reply from model. Data was:', JSON.stringify(data));
-      throw new Error('No reply from model');
-    }
+      req.on('error', (e) => reject(e));
+      req.write(postData);
+      req.end();
+    });
 
     return {
       statusCode: 200,
@@ -66,7 +79,7 @@ Laveste prioritet (-2): ${bottomCard}`;
     return {
       statusCode: 500,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: 'Failed to process request', details: error.message })
+      body: JSON.stringify({ error: 'Failed to process request', details: String(error.message) })
     };
   }
 };
